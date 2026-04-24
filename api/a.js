@@ -15,17 +15,15 @@ export default async function handler(req, res) {
       });
     }
 
-    // Create MD5 token
+    // MD5 token
     const raw = `${game}-${user_key}-${serial}-Vm8Lk7Uj2JmsjCPVPVjrLa7zgfx3uz9E`;
     const token = crypto.createHash("md5").update(raw).digest("hex");
 
-    // Timestamp + 30 seconds
-    const ts = Math.floor(Date.now() / 1000) + 30;
+    // Current timestamp (seconds)
+    const nowTs = Math.floor(Date.now() / 1000);
 
-    // Expiry = current date + 1 day
-    const now = new Date();
-    const expDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-
+    // Expiry = +1 day
+    const expDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const formattedDate = expDate
       .toISOString()
       .replace("T", " ")
@@ -35,7 +33,6 @@ export default async function handler(req, res) {
       status: true,
       data: {
         token: token,
-        ts: ts,
         modname: "VIP MOD",
         mod_status: "Safe",
         credit: "MOD STATUS :- 100% SAFE",
@@ -51,7 +48,9 @@ export default async function handler(req, res) {
         EXP: formattedDate,
         exdate: formattedDate,
         device: "30",
-        rng: Math.floor(Math.random() * 2000000000),
+
+        // 👇 rng now behaves like 1777007512
+        rng: nowTs
       },
     });
   } catch (err) {
