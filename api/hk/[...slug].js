@@ -6,15 +6,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Catch-all slug parts (e.g. /api/ap/hk/test → ["ap", "hk", "test"])
     const { slug } = req.query;
-
     const { game, user_key, serial } = req.body;
 
     if (!game || !user_key || !serial) {
       return res.status(400).json({
         status: false,
         message: "Missing parameters",
+      });
+    }
+
+    // 🔹 Fetch allowed keys from Pastebin
+    const pasteRes = await fetch("https://pastebin.com/raw/3BKrbU8k");
+    const text = await pasteRes.text();
+
+    // Convert into array (trim to remove spaces/newlines)
+    const validKeys = text
+      .split("\n")
+      .map(k => k.trim())
+      .filter(k => k.length > 0);
+
+    // 🔹 Check if user_key exists
+    if (!validKeys.includes(user_key)) {
+      return res.status(403).json({
+        status: false,
+        message: "Key not found",
       });
     }
 
@@ -34,7 +50,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       status: true,
-      route: slug, // 👈 optional: shows ["ap","hk","..."]
+      route: slug,
       data: {
         token: token,
         modname: "VIP MOD",
